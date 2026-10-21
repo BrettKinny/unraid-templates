@@ -14,7 +14,7 @@
 &#xD;
 HTTPS IS REQUIRED. Browsers block the encryption UnKeep uses on plain-HTTP addresses, so the WebUI link (http://server-ip:port) shows an "UnKeep needs HTTPS" page. Publish it through Tailscale Serve, a reverse proxy such as Nginx Proxy Manager or SWAG, or Cloudflare Tunnel, and open that HTTPS address.&#xD;
 &#xD;
-Before first start: create the appdata folder owned by nobody:users, for example: mkdir -p /mnt/user/appdata/unkeep &amp;&amp; chown 99:100 /mnt/user/appdata/unkeep. Generate two different random tokens (for example with: openssl rand -hex 32) for the setup and recovery tokens.&#xD;
+Before first start, generate two different random tokens (for example with: openssl rand -hex 32) for the setup and recovery tokens. The appdata folder needs no preparation: the relay starts as root only long enough to give it to PUID:PGID, then permanently drops to that user with no capabilities.&#xD;
 &#xD;
 On the first device, enter the setup token and save the recovery kit it offers. Pair later devices from an unlocked one. Back up the appdata folder before updates: 0.x releases may change the database in one direction only.</Overview>
   <Changes>Release notes: https://github.com/BrettKinny/UnKeep/blob/main/CHANGELOG.md</Changes>
@@ -22,13 +22,15 @@ On the first device, enter the setup token and save the recovery kit it offers. 
   <WebUI>http://[IP]:[PORT:3000]/</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/BrettKinny/unraid-templates/main/templates/unkeep.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/BrettKinny/unraid-templates/main/icons/unkeep.png</Icon>
-  <ExtraParams>--user 99:100 --init --read-only --tmpfs /tmp:size=16m,mode=1777 --cap-drop ALL --security-opt no-new-privileges</ExtraParams>
+  <ExtraParams>--user 0:0 --read-only --tmpfs /tmp:size=16m,mode=1777 --cap-drop ALL --cap-add CHOWN --cap-add SETUID --cap-add SETGID --security-opt no-new-privileges</ExtraParams>
   <PostArgs/>
   <CPUset/>
   <Requires>An HTTPS front end (Tailscale Serve, a reverse proxy, or Cloudflare Tunnel). UnKeep does not work over plain HTTP on the LAN.</Requires>
   <License>MIT</License>
   <Config Name="WebUI port" Target="3000" Default="3000" Mode="tcp" Description="Relay and web app port (plain HTTP). Put HTTPS in front of it; do not expose it directly to the internet." Type="Port" Display="always" Required="true" Mask="false">3000</Config>
-  <Config Name="Data" Target="/data" Default="/mnt/user/appdata/unkeep" Mode="rw" Description="Encrypted vault database. Must be owned by 99:100 (nobody:users). Back it up before updating." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/unkeep</Config>
+  <Config Name="Data" Target="/data" Default="/mnt/user/appdata/unkeep" Mode="rw" Description="Encrypted vault database. The relay gives this folder to PUID:PGID on start. Back it up before updating." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/unkeep</Config>
+  <Config Name="PUID" Target="PUID" Default="99" Mode="" Description="User ID the relay runs as after taking ownership of its data folder. Must not be 0." Type="Variable" Display="advanced" Required="true" Mask="false">99</Config>
+  <Config Name="PGID" Target="PGID" Default="100" Mode="" Description="Group ID the relay runs as. Must not be 0." Type="Variable" Display="advanced" Required="true" Mask="false">100</Config>
   <Config Name="Setup token" Target="UNKEEP_SETUP_TOKEN" Default="" Mode="" Description="One-time secret for creating the vault on the first device. 32-256 printable characters, no spaces (for example: openssl rand -hex 32)." Type="Variable" Display="always" Required="true" Mask="true"/>
   <Config Name="Recovery token" Target="UNKEEP_RECOVERY_TOKEN" Default="" Mode="" Description="Operator secret for restoring access with a recovery kit after losing every device. 32-256 characters and different from the setup token. Keep it somewhere safe." Type="Variable" Display="always" Required="true" Mask="true"/>
   <Config Name="Link previews" Target="UNKEEP_LINK_PREVIEWS" Default="|1" Mode="" Description="Set to 1 for Keep-style link previews. The relay then fetches previewed URLs, so it sees them in plain text and needs outbound internet access." Type="Variable" Display="advanced" Required="false" Mask="false"/>
