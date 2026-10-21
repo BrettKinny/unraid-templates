@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<CommunityApplications>
+  <Profile>Brett Kinny maintains UnKeep, a private, self-hosted notes vault with end-to-end encrypted sync and a terminal scratchpad for AI agents. Support and bug reports go through GitHub issues on the UnKeep repository.</Profile>
+  <Icon>https://raw.githubusercontent.com/BrettKinny/unraid-templates/main/icon.svg</Icon>
+  <WebPage>https://github.com/BrettKinny/UnKeep</WebPage>
+</CommunityApplications>

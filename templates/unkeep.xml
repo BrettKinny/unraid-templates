@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>UnKeep</Name>
+  <Repository>ghcr.io/brettkinny/unkeep:latest</Repository>
+  <Registry>https://github.com/BrettKinny/UnKeep/pkgs/container/unkeep</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/BrettKinny/UnKeep/issues</Support>
+  <Project>https://github.com/BrettKinny/UnKeep</Project>
+  <ReadMe>https://github.com/BrettKinny/UnKeep/blob/main/docs/self-hosting.md#unraid-settings</ReadMe>
+  <Overview>UnKeep is a private, self-hosted, Google Keep-style notes app (an installable PWA) with end-to-end encrypted sync. Notes are encrypted on your devices; this container is a small relay that only stores ciphertext. It also works as a scratchpad that AI agents can read and write from the terminal with the bundled unkeep CLI.&#xD;
+&#xD;
+HTTPS IS REQUIRED. Browsers block the encryption UnKeep uses on plain-HTTP addresses, so the WebUI link (http://server-ip:port) shows an "UnKeep needs HTTPS" page. Publish it through Tailscale Serve, a reverse proxy such as Nginx Proxy Manager or SWAG, or Cloudflare Tunnel, and open that HTTPS address.&#xD;
+&#xD;
+Before first start: create the appdata folder owned by nobody:users, for example: mkdir -p /mnt/user/appdata/unkeep &amp;&amp; chown 99:100 /mnt/user/appdata/unkeep. Generate two different random tokens (for example with: openssl rand -hex 32) for the setup and recovery tokens.&#xD;
+&#xD;
+On the first device, enter the setup token and save the recovery kit it offers. Pair later devices from an unlocked one. Back up the appdata folder before updates: 0.x releases may change the database in one direction only.</Overview>
+  <Changes>Release notes: https://github.com/BrettKinny/UnKeep/blob/main/CHANGELOG.md</Changes>
+  <Category>Productivity: Tools:Utilities</Category>
+  <WebUI>http://[IP]:[PORT:3000]/</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/BrettKinny/unraid-templates/main/templates/unkeep.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/BrettKinny/unraid-templates/main/icons/unkeep.png</Icon>
+  <ExtraParams>--user 99:100 --init --read-only --tmpfs /tmp:size=16m,mode=1777 --cap-drop ALL --security-opt no-new-privileges</ExtraParams>
+  <PostArgs/>
+  <CPUset/>
+  <Requires>An HTTPS front end (Tailscale Serve, a reverse proxy, or Cloudflare Tunnel). UnKeep does not work over plain HTTP on the LAN.</Requires>
+  <License>MIT</License>
+  <Config Name="WebUI port" Target="3000" Default="3000" Mode="tcp" Description="Relay and web app port (plain HTTP). Put HTTPS in front of it; do not expose it directly to the internet." Type="Port" Display="always" Required="true" Mask="false">3000</Config>
+  <Config Name="Data" Target="/data" Default="/mnt/user/appdata/unkeep" Mode="rw" Description="Encrypted vault database. Must be owned by 99:100 (nobody:users). Back it up before updating." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/unkeep</Config>
+  <Config Name="Setup token" Target="UNKEEP_SETUP_TOKEN" Default="" Mode="" Description="One-time secret for creating the vault on the first device. 32-256 printable characters, no spaces (for example: openssl rand -hex 32)." Type="Variable" Display="always" Required="true" Mask="true"/>
+  <Config Name="Recovery token" Target="UNKEEP_RECOVERY_TOKEN" Default="" Mode="" Description="Operator secret for restoring access with a recovery kit after losing every device. 32-256 characters and different from the setup token. Keep it somewhere safe." Type="Variable" Display="always" Required="true" Mask="true"/>
+  <Config Name="Link previews" Target="UNKEEP_LINK_PREVIEWS" Default="|1" Mode="" Description="Set to 1 for Keep-style link previews. The relay then fetches previewed URLs, so it sees them in plain text and needs outbound internet access." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Allowed origin" Target="UNKEEP_ALLOWED_ORIGIN" Default="" Mode="" Description="Optional exact HTTPS origin (for example https://notes.example.com) allowed to call the relay cross-origin. Leave empty when the web app and relay share one address." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Trust proxy" Target="UNKEEP_TRUST_PROXY" Default="|1" Mode="" Description="Set to 1 only if your reverse proxy replaces (not appends to) X-Forwarded-For, so rate limits see real client addresses." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Max attachment size" Target="UNKEEP_MAX_ATTACHMENT_SIZE" Default="" Mode="" Description="Maximum attachment size in bytes. Default 26214400 (25 MiB), maximum 104857600 (100 MiB)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+</Container>
